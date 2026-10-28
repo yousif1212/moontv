@@ -152,7 +152,7 @@
 
         <h2 class="section-title" id="gridTitle">Trending Worldwide (TMDB Library)</h2>
         <div class="movies-grid" id="moviesGrid">
-            <div style="color: var(--text-muted);">Loading full media library...</div>
+            <div style="color: var(--text-muted);">Loading full media library via secure proxy...</div>
         </div>
     </div>
 
@@ -171,8 +171,12 @@
             grid.innerHTML = '<div style="color: var(--text-muted);">Loading catalog...</div>';
 
             try {
-                const res = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_KEY}`);
-                const data = await res.json();
+                // استخدام بروكسي وسيط لتجاوز أي حظر شبكي على الطلب
+                const targetUrl = `https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_KEY}`;
+                const res = await fetch(`https://api.allorigins.win/get?url=` + encodeURIComponent(targetUrl));
+                const wrapper = await res.json();
+                const data = JSON.parse(wrapper.contents);
+
                 if (data.results && data.results.length > 0) {
                     renderGrid(data.results);
                 } else {
@@ -180,7 +184,7 @@
                 }
             } catch (err) {
                 console.error("TMDB Fetch Error:", err);
-                grid.innerHTML = '<div style="color: red;">Failed to connect to TMDB library. Please ensure your hosting environment is active.</div>';
+                grid.innerHTML = '<div style="color: red;">Failed to connect to TMDB library. Check network restrictions.</div>';
             }
         }
 
@@ -193,8 +197,11 @@
             grid.innerHTML = '<div style="color: var(--text-muted);">Searching global library...</div>';
 
             try {
-                const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}`);
-                const data = await res.json();
+                const targetUrl = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}`;
+                const res = await fetch(`https://api.allorigins.win/get?url=` + encodeURIComponent(targetUrl));
+                const wrapper = await res.json();
+                const data = JSON.parse(wrapper.contents);
+
                 if (data.results && data.results.length > 0) {
                     renderGrid(data.results);
                 } else {
@@ -252,8 +259,10 @@
             }
 
             try {
-                const extRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/external_ids?api_key=${TMDB_KEY}`);
-                const extData = await extRes.json();
+                const extTarget = `https://api.themoviedb.org/3/${mediaType}/${tmdbId}/external_ids?api_key=${TMDB_KEY}`;
+                const extRes = await fetch(`https://api.allorigins.win/get?url=` + encodeURIComponent(extTarget));
+                const extWrapper = await extRes.json();
+                const extData = JSON.parse(extWrapper.contents);
                 const imdbId = extData.imdb_id;
 
                 if (!imdbId) {
