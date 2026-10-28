@@ -3,46 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moon TV - Stream Anything Instantly</title>
-    <!-- WebTorrent Library for Browser Streaming -->
+    <title>Moon TV - Professional P2P Streaming</title>
+    <!-- WebTorrent Library -->
     <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
     <style>
         :root {
-            --netflix-bg: #141414;
-            --netflix-red: #e50914;
-            --netflix-card: #1f1f1f;
+            --bg-color: #141414;
+            --accent-red: #e50914;
+            --card-bg: #1f1f1f;
             --text-main: #ffffff;
-            --text-secondary: #b3b3b3;
+            --text-muted: #b3b3b3;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background-color: var(--netflix-bg);
+            background-color: var(--bg-color);
             color: var(--text-main);
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            overflow-x: hidden;
+            padding-bottom: 50px;
         }
 
-        /* Netflix Style Header */
         header {
-            position: fixed;
+            position: sticky;
             top: 0;
-            left: 0;
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 20px 40px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(5px);
             z-index: 1000;
+            border-bottom: 1px solid #222;
         }
 
         .logo {
-            color: var(--netflix-red);
+            color: var(--accent-red);
             font-size: 28px;
             font-weight: bold;
             letter-spacing: 2px;
-            text-transform: uppercase;
+            cursor: pointer;
         }
 
         .search-container {
@@ -52,24 +52,18 @@
 
         .search-container input {
             padding: 10px 15px;
-            width: 250px;
-            background: rgba(0, 0, 0, 0.75);
+            width: 280px;
+            background: #000;
             border: 1px solid #333;
             border-radius: 4px;
             color: #fff;
             font-size: 14px;
             outline: none;
-            transition: width 0.3s;
-        }
-
-        .search-container input:focus {
-            width: 320px;
-            border-color: #fff;
         }
 
         .search-container button {
             padding: 10px 20px;
-            background-color: var(--netflix-red);
+            background-color: var(--accent-red);
             color: white;
             border: none;
             border-radius: 4px;
@@ -77,78 +71,38 @@
             cursor: pointer;
         }
 
-        .search-container button:hover {
-            background-color: #f40612;
-        }
-
-        /* Main Container */
         .container {
             max-width: 1400px;
-            margin: 100px auto 50px;
+            margin: 30px auto;
             padding: 0 40px;
         }
 
-        /* Player Modal Section */
         .player-section {
-            background: var(--netflix-card);
+            background: var(--card-bg);
             border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 40px;
+            padding: 20px;
+            margin-bottom: 30px;
             display: none;
             border: 1px solid #333;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
         }
 
-        .player-section.active {
-            display: block;
-        }
+        .player-section.active { display: block; }
+        .player-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .close-player { background: #333; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; }
 
-        .player-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .player-header h2 {
-            font-size: 22px;
-            color: #fff;
-        }
-
-        .close-player {
-            background: #333;
-            color: #fff;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        video {
-            width: 100%;
-            max-height: 600px;
-            background: #000;
-            border-radius: 4px;
-        }
-
+        video { width: 100%; max-height: 550px; background: #000; border-radius: 4px; }
+        
         .status-bar {
             margin-top: 15px;
             padding: 12px;
             background: #111;
             border-radius: 4px;
             font-size: 14px;
-            color: var(--text-secondary);
-            border-left: 4px solid var(--netflix-red);
+            color: var(--text-muted);
+            border-left: 4px solid var(--accent-red);
         }
 
-        /* Movies Grid (Netflix Row Style) */
-        .section-title {
-            font-size: 22px;
-            margin-bottom: 20px;
-            font-weight: 500;
-            color: #e5e5e5;
-        }
-
+        .section-title { font-size: 22px; margin-bottom: 20px; color: #e5e5e5; }
         .movies-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -156,99 +110,77 @@
         }
 
         .movie-card {
-            background: var(--netflix-card);
-            border-radius: 4px;
+            background: var(--card-bg);
+            border-radius: 6px;
             overflow: hidden;
             cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
+            transition: transform 0.2s ease;
         }
 
-        .movie-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-            z-index: 10;
-        }
-
-        .movie-card img {
-            width: 100%;
-            height: 270px;
-            object-fit: cover;
-        }
-
-        .movie-info {
-            padding: 12px;
-        }
-
-        .movie-title {
-            font-size: 14px;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #fff;
-        }
-
-        .movie-year {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 5px;
-        }
+        .movie-card:hover { transform: scale(1.04); }
+        .movie-card img { width: 100%; height: 260px; object-fit: cover; background: #222; }
+        .movie-info { padding: 10px; }
+        .movie-title { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+        .movie-year { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
         @media(max-width: 768px) {
             header { padding: 15px 20px; }
-            .container { padding: 0 15px; margin-top: 90px; }
+            .container { padding: 0 15px; }
             .search-container input { width: 150px; }
-            .search-container input:focus { width: 180px; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">MOON TV</div>
+        <div class="logo" onclick="fetchTrendingMedia()">MOON TV</div>
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search movies, shows..." onkeyup="if(event.key === 'Enter') searchMedia()">
+            <input type="text" id="searchInput" placeholder="Search movies, TV shows..." onkeyup="if(event.key === 'Enter') searchMedia()">
             <button onclick="searchMedia()">Search</button>
         </div>
     </header>
 
     <div class="container">
-        <!-- Live WebTorrent Player Section -->
         <div class="player-section" id="playerSection">
             <div class="player-header">
-                <h2 id="playingTitle">Loading Stream...</h2>
+                <h2 id="playingTitle" style="font-size: 18px;">Loading Stream...</h2>
                 <button class="close-player" onclick="closePlayer()">Close</button>
             </div>
-            <div class="status-bar" id="statusBar">Initializing P2P WebTorrent Engine...</div>
+            <div class="status-bar" id="statusBar">Initializing P2P WebTorrent...</div>
             <video id="videoPlayer" controls autoplay></video>
         </div>
 
-        <h2 class="section-title" id="gridTitle">Trending All Worldwide</h2>
+        <h2 class="section-title" id="gridTitle">Trending Worldwide (TMDB Library)</h2>
         <div class="movies-grid" id="moviesGrid">
-            <div style="color: #777; grid-column: span 100;">Loading library from TMDB...</div>
+            <div style="color: var(--text-muted);">Loading full media library...</div>
         </div>
     </div>
 
     <script>
-        const TMDB_API_KEY = '84b03629470b88025f305f6e8260e66e';
+        const TMDB_KEY = '84b03629470b88025f305f6e8260e66e';
         const client = new WebTorrent();
         let currentTorrent = null;
 
-        // Load trending media automatically on start
         window.onload = function() {
             fetchTrendingMedia();
         };
 
         async function fetchTrendingMedia() {
-            const url = `https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}`;
+            document.getElementById('gridTitle').innerText = "Trending Worldwide (TMDB Library)";
+            const grid = document.getElementById('moviesGrid');
+            grid.innerHTML = '<div style="color: var(--text-muted);">Loading catalog...</div>';
+
             try {
-                const response = await fetch(url);
-                const data = await response.json();
-                renderGrid(data.results);
+                const res = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_KEY}`);
+                const data = await res.json();
+                if (data.results && data.results.length > 0) {
+                    renderGrid(data.results);
+                } else {
+                    grid.innerHTML = '<div style="color: red;">No catalog items found.</div>';
+                }
             } catch (err) {
-                console.error("TMDB Error:", err);
-                document.getElementById('moviesGrid').innerHTML = '<div style="color:red;">Failed to load catalog. Please check your web hosting environment.</div>';
+                console.error("TMDB Fetch Error:", err);
+                grid.innerHTML = '<div style="color: red;">Failed to connect to TMDB library. Please ensure your hosting environment is active.</div>';
             }
         }
 
@@ -257,15 +189,20 @@
             if (!query) return;
 
             document.getElementById('gridTitle').innerText = `Search Results for: "${query}"`;
-            document.getElementById('moviesGrid').innerHTML = '<div style="color:#aaa;">Searching catalog...</div>';
+            const grid = document.getElementById('moviesGrid');
+            grid.innerHTML = '<div style="color: var(--text-muted);">Searching global library...</div>';
 
-            const url = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`;
             try {
-                const response = await fetch(url);
-                const data = await response.json();
-                renderGrid(data.results);
+                const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                if (data.results && data.results.length > 0) {
+                    renderGrid(data.results);
+                } else {
+                    grid.innerHTML = '<div style="color: var(--text-muted);">No results found in global library.</div>';
+                }
             } catch (err) {
                 console.error("Search Error:", err);
+                grid.innerHTML = '<div style="color: red;">Search request failed.</div>';
             }
         }
 
@@ -276,16 +213,16 @@
             items.forEach(item => {
                 if (!item.poster_path) return;
 
-                const card = document.createElement('div');
-                card.className = 'movie-card';
-                
                 const title = item.title || item.name;
                 const year = (item.release_date || item.first_air_date || '').split('-')[0];
                 const mediaType = item.media_type || (item.title ? 'movie' : 'tv');
                 const id = item.id;
 
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+
                 card.innerHTML = `
-                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${title}">
+                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${title}" loading="lazy">
                     <div class="movie-info">
                         <div class="movie-title">${title}</div>
                         <div class="movie-year">${year} • ${mediaType.toUpperCase()}</div>
@@ -297,7 +234,6 @@
             });
         }
 
-        // The Ultimate Bridge: TMDB -> IMDb ID -> Torrentio/P2P Scraper -> WebTorrent Stream
         async function resolveAndStream(tmdbId, title, mediaType) {
             const playerSection = document.getElementById('playerSection');
             const playingTitle = document.getElementById('playingTitle');
@@ -307,63 +243,56 @@
             playerSection.classList.add('active');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             playingTitle.innerText = `Streaming: ${title}`;
-            statusBar.innerText = "🔍 Fetching IMDb Metadata from TMDB...";
+            statusBar.innerText = "🔍 Resolving IMDb metadata from TMDB...";
             videoPlayer.src = "";
 
-            // Stop previous torrent if active
             if (currentTorrent) {
                 client.remove(currentTorrent.magnetURI);
                 currentTorrent = null;
             }
 
             try {
-                // Step 1: Get IMDb ID from TMDB External IDs
-                const externalRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/external_ids?api_key=${TMDB_API_KEY}`);
-                const externalData = await externalRes.json();
-                const imdbId = externalData.imdb_id;
+                const extRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/external_ids?api_key=${TMDB_KEY}`);
+                const extData = await extRes.json();
+                const imdbId = extData.imdb_id;
 
                 if (!imdbId) {
                     statusBar.innerText = "❌ Error: Could not resolve IMDb ID for this title.";
                     return;
                 }
 
-                statusBar.innerText = `⚡ Scraping Torrent streams for IMDb: ${imdbId}...`;
+                statusBar.innerText = `⚡ Scraping P2P streams for IMDb: ${imdbId}...`;
 
-                // Step 2: Use Torrentio API (The professional scraper used behind the scenes)
                 const scraperUrl = `https://torrentio.strem.fun/stream/${mediaType}/${imdbId}.json`;
                 const scraperRes = await fetch(scraperUrl);
                 const scraperData = await scraperRes.json();
 
                 if (!scraperData.streams || scraperData.streams.length === 0) {
-                    statusBar.innerText = "❌ No instant P2P streams found for this release yet.";
+                    statusBar.innerText = "❌ No active P2P streams found for this title yet.";
                     return;
                 }
 
-                // Step 3: Pick the highest quality stream hash
                 const bestStream = scraperData.streams[0];
                 const infoHash = bestStream.infoHash;
                 const magnetURI = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(title)}`;
 
                 statusBar.innerText = `🚀 Connecting to P2P Swarm & Buffering (Zero Ads)...`;
 
-                // Step 4: Stream live via WebTorrent inside HTML5 Video Player
                 client.add(magnetURI, function (torrent) {
                     currentTorrent = torrent;
-                    statusBar.innerText = `▶️ Now Playing Live: ${torrent.name} (Peers: ${torrent.numPeers})`;
+                    statusBar.innerText = `▶️ Live Streaming: ${torrent.name} (Peers: ${torrent.numPeers})`;
 
-                    // Find video file
                     const file = torrent.files.find(f => f.name.endsWith('.mp4') || f.name.endsWith('.mkv') || f.name.endsWith('.webm'));
-                    
                     if (file) {
                         file.renderTo(videoPlayer, { autoplay: true });
                     } else {
-                        statusBar.innerText = "⚠️ Error: Compatible video format not found in this torrent file.";
+                        statusBar.innerText = "⚠️ Error: Compatible video format not found in this stream.";
                     }
                 });
 
             } catch (err) {
                 console.error("Streaming Error:", err);
-                statusBar.innerText = "⚠️ Failed to fetch or stream this title. Try another one.";
+                statusBar.innerText = "⚠️ Failed to stream this title. Try another one.";
             }
         }
 
